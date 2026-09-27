@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales Floor Board</title>
+<meta name="description" content="Demo sales floor dashboard for a GoHighLevel account: lead aging, unworked leads and calls per agent. Generated data.">
+<meta name="theme-color" content="#f9f9f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%232a78d6'/><rect x='3' y='9' width='2' height='4' fill='white'/><rect x='7' y='6' width='2' height='7' fill='white'/><rect x='11' y='3' width='2' height='10' fill='white'/></svg>">
+<style>
+:root{
+  color-scheme: light;
+  --plane:#f9f9f7; --surface:#fcfcfb; --raise:#ffffff;
+  --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --ring:rgba(11,11,11,.10);
+  --s1:#2a78d6; --s2:#eb6834; --s1-wash:rgba(42,120,214,.10);
+  --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b;
+  --good-ink:#006300; --crit-ink:#b42f2f;
+  --empty:#f0efec;
+  --focus:#2a78d6;
+  --fs:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --plane:#0d0d0d; --surface:#1a1a19; --raise:#1f1f1e;
+    --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,.10);
+    --s1:#3987e5; --s2:#d95926; --s1-wash:rgba(57,135,229,.14);
+    --good-ink:#0ca30c; --crit-ink:#e66767;
+    --empty:#262624; --focus:#6da7ec;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --plane:#0d0d0d; --surface:#1a1a19; --raise:#1f1f1e;
+  --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,.10);
+  --s1:#3987e5; --s2:#d95926; --s1-wash:rgba(57,135,229,.14);
+  --good-ink:#0ca30c; --crit-ink:#e66767;
+  --empty:#262624; --focus:#6da7ec;
+}
+:root.tv{ --fs:18px; }
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--plane);color:var(--ink);font:var(--fs)/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+button{font:inherit;color:inherit;touch-action:manipulation}
+h1,h2{text-wrap:balance}
+.skip{position:absolute;left:-9999px;top:8px;background:var(--raise);padding:8px 12px;border-radius:6px;z-index:20}
+.skip:focus{left:8px}
+.seg button:hover{color:var(--ink);background:var(--s1-wash)}
+.ghost:hover{background:var(--s1-wash)}
+th button:hover{color:var(--ink)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:.86em}
+.num{font-variant-numeric:tabular-nums}
+
+.wrap{max-width:1440px;margin:0 auto;padding:20px 24px 40px}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
+.title h1{font-size:1.55em;font-weight:650;letter-spacing:-.01em;margin:0}
+.title p{margin:2px 0 0;color:var(--ink-2)}
+.sync{display:inline-flex;align-items:center;gap:6px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--good);display:inline-block}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:inline-flex;flex-wrap:wrap;max-width:100%;background:var(--surface);border:1px solid var(--ring);border-radius:8px;padding:2px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:6px;cursor:pointer;color:var(--ink-2);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--raise);color:var(--ink);box-shadow:0 0 0 1px var(--ring);font-weight:600}
+.ghost{border:1px solid var(--ring);background:var(--surface);border-radius:8px;padding:7px 12px;cursor:pointer}
+.ghost[aria-pressed="true"]{font-weight:600;box-shadow:inset 0 0 0 1px var(--ink-2)}
+
+.banner{background:var(--s1-wash);border-radius:8px;padding:8px 12px;margin:0 0 16px;color:var(--ink-2)}
+.banner b{color:var(--ink)}
+
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:12px}
+.tile{background:var(--surface);border:1px solid var(--ring);border-radius:10px;padding:14px 16px}
+.tile .label{color:var(--ink-2)}
+.tile .value{font-size:2.1em;font-weight:620;line-height:1.1;margin:4px 0 2px}
+.tile .sub{color:var(--muted);font-size:.9em}
+.tile.hero .value{font-size:3.4em}
+.delta-up{color:var(--good-ink)} .delta-down{color:var(--crit-ink)}
+
+.grid2{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px;margin-bottom:12px}
+.card{background:var(--surface);border:1px solid var(--ring);border-radius:10px;padding:16px;min-width:0}
+.card h2{font-size:1.05em;font-weight:620;margin:0}
+.card .desc{color:var(--ink-2);margin:2px 0 12px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--ink-2);margin:-4px 0 10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:2px;display:inline-block}
+
+/* table */
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--grid);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--ink-2);font-size:.9em}
+th button{border:0;background:none;padding:0;cursor:pointer;font-weight:600;color:inherit}
+th button[data-dir]::after{content:attr(data-dir);margin-left:4px;color:var(--muted)}
+td{font-variant-numeric:tabular-nums}
+tbody tr:hover{background:var(--s1-wash)}
+.callbar{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end}
+.callbar .track{width:64px;height:8px;background:var(--empty);border-radius:0 4px 4px 0;position:relative}
+.callbar .fill{position:absolute;left:0;top:0;bottom:0;background:var(--s1);border-radius:0 4px 4px 0}
+.status{display:inline-flex;align-items:center;gap:6px;justify-content:flex-end}
+.late{color:var(--crit-ink);font-weight:600}
+
+/* heat grid */
+.heat{display:grid;gap:2px;align-items:stretch}
+.heat .hd{color:var(--ink-2);font-size:.82em;text-align:center;padding:0 2px 4px;align-self:end}
+.heat .rowname{padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;align-self:center}
+.heat .cell{height:26px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.82em;font-variant-numeric:tabular-nums;cursor:default}
+.heat .cell:focus-visible{outline-offset:1px}
+.scale{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.85em;margin-top:10px}
+.scale .bar{display:flex;gap:2px}
+.scale .bar i{width:18px;height:10px;display:block;border-radius:2px}
+
+svg text{fill:var(--muted);font-size:12px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+svg .lbl{fill:var(--ink-2)}
+svg .lbl-strong{fill:var(--ink);font-weight:600}
+
+#tip{position:fixed;pointer-events:none;z-index:10;background:var(--raise);color:var(--ink);border:1px solid var(--ring);border-radius:8px;padding:8px 10px;box-shadow:0 4px 16px rgba(0,0,0,.14);font-size:13px;max-width:260px;opacity:0;transition:opacity .08s}
+#tip .t{font-weight:600;margin-bottom:2px}
+#tip .r{display:flex;gap:10px;justify-content:space-between;color:var(--ink-2)}
+#tip .r b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+footer{color:var(--muted);margin-top:18px;font-size:.9em}
+
+@media (max-width:1100px){.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
+@media (max-width:640px){.wrap{padding:16px}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tile.hero{grid-column:1/-1}}
+@media (prefers-reduced-motion:reduce){#tip{transition:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#agentsH">Skip to agents</a>
+<div class="wrap">
+  <header class="top">
+    <div class="title">
+      <h1>Sales floor</h1>
+      <p><span class="sync"><i aria-hidden="true"></i>Synced from GoHighLevel 2 min ago</span> · <span id="clock"></span></p>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Pipeline" id="pipes"></div>
+      <button class="ghost" id="tvBtn" aria-pressed="false">TV mode</button>
+      <button class="ghost" id="themeBtn">Dark</button>
+    </div>
+  </header>
+
+  <p class="banner"><b>Demo with generated data.</b> 22 agents, 3 pipelines, 1,700+ leads. On a live account every number here comes from the GoHighLevel API, and the page opens inside GHL from the sidebar.</p>
+
+  <section class="tiles" id="tiles" aria-label="Floor summary"></section>
+
+  <section class="card" style="margin-bottom:12px" aria-labelledby="agentsH">
+    <h2 id="agentsH">Agents</h2>
+    <p class="desc">Sorted by who needs attention first. Click a column to re-sort.</p>
+    <div class="tablewrap"><table id="agents"></table></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card" aria-labelledby="heatH">
+      <h2 id="heatH">Where leads are going stale</h2>
+      <p class="desc">Open leads per agent, by days since last call, text or email. The right-hand columns are the ones to worry about.</p>
+      <div id="heat"></div>
+      <div class="scale" aria-hidden="true"><span>Contacted this week</span><span class="bar" id="scalebar"></span><span>Going stale, darker is more leads</span></div>
+    </section>
+    <section class="card" aria-labelledby="pileH">
+      <h2 id="pileH">Where leads are piling up</h2>
+      <p class="desc">Open leads in each stage, split by last contact.</p>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--s1)"></i>Contacted in last 7 days</span>
+        <span><i class="sw" style="background:var(--s2)"></i>No contact in 7+ days</span>
+      </div>
+      <div id="pile"></div>
+    </section>
+  </div>
+
+  <section class="card" aria-labelledby="callsH">
+    <h2 id="callsH">Floor calls per workday</h2>
+    <p class="desc">Outbound calls across all agents and pipelines, last 10 workdays. Today is a partial day.</p>
+    <div id="calls"></div>
+  </section>
+
+  <footer>Mockup by Don Florencio · WorkfloHQ.com · all names and numbers are generated</footer>
+</div>
+<div id="tip" role="tooltip"></div>
+
+<script>
+(() => {
+// ---------- deterministic fake data ----------
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rnd = mulberry32(20260924);
+const pick = w => { const s = w.reduce((a,b)=>a+b,0); let r = rnd()*s; for (let i=0;i<w.length;i++){ if((r-=w[i])<0) return i;} return w.length-1; };
+const expo = mean => -Math.log(1-rnd())*mean;
+
+const NOW = new Date(2026, 8, 24, 11, 42);          // Thursday, mid-morning
+const DAY_FRAC = (11 + 42/60 - 9) / 8;              // share of a 9-5 day elapsed
+
+const PIPES = [
+  {id:'inbound', name:'Inbound web',  stages:['New lead','Attempted','Contacted','Qualified','Appointment set','Proposal sent'], weight:5},
+  {id:'paid',    name:'Paid social',  stages:['New lead','Attempted','Contacted','Appointment set','Proposal sent'], weight:4},
+  {id:'react',   name:'Reactivation', stages:['Queued','Attempted','Re-engaged','Appointment set'], weight:2},
+];
+const NAMES = ['Maya Ruiz','Devon Kessler','Priya Natarajan','Marcus Bell','Aaliyah Grant','Tomás Herrera','Jenna Kowalski','Brandon Lee','Keisha Morgan','Owen Fitzgerald','Sofia Marchetti','Darnell Hayes','Rachel Stein','Luis Ortega','Hannah Cho','Tyler Brooks','Nadia Petrova','Chris Adeyemi','Emily Vaughn','Jordan Price','Samira Haddad','Kyle Donovan'];
+// three agents clearly behind, two borderline, the rest working
+const DIL = [0.95,0.9,0.88,0.3,0.92,0.85,0.55,0.97,0.9,0.28,0.86,0.93,0.6,0.89,0.94,0.35,0.9,0.87,0.91,0.84,0.96,0.88];
+
+const agents = NAMES.map((name,i)=>({id:i,name,d:DIL[i]}));
+const opps = [];
+for (const a of agents){
+  const n = Math.round(58 + rnd()*44 + (1-a.d)*18);
+  for (let k=0;k<n;k++){
+    const p = PIPES[pick(PIPES.map(p=>p.weight))];
+    const created = Math.pow(rnd(),1.5)*42;                    // days ago
+    // strong reps touch everything within a day; weak reps let leads sit for weeks
+    const pContact = created < 1 ? 0.35 + 0.55*a.d
+                   : a.d >= 0.8 ? 1
+                   : a.d >= 0.5 ? (created < 5 ? 0.8 : 0.97)
+                   : 0.55 + 0.44*a.d;
+    let last = null, stage = 0;
+    if (rnd() < pContact){
+      last = Math.min(created, expo(0.8 + (1-a.d)*11));
+      // paid social leads stall at "Attempted" when nobody calls them back
+      if (p.id==='paid' && last > 5 && rnd()<0.6) stage = 1;
+      else stage = 1 + pick(p.stages.slice(1).map((_,j)=> Math.pow(0.62, j)));
+    }
+    opps.push({agent:a.id, pipe:p.id, stage, created, last});
+  }
+}
+// calls: last 10 workdays incl. today (partial)
+const workdays = [];
+for (let dd=0; workdays.length<10; dd++){
+  const d = new Date(NOW); d.setDate(d.getDate()-dd);
+  if (d.getDay()!==0 && d.getDay()!==6) workdays.unshift(d);
+}
+for (const a of agents){
+  const base = 14 + a.d*58;
+  a.calls = workdays.map((d,i)=>{
+    const full = Math.max(0, Math.round(base + (rnd()-0.5)*16));
+    return i===workdays.length-1 ? Math.round(full*DAY_FRAC*(0.7+rnd()*0.5)*(a.d<0.4?0.35:1)) : full;
+  });
+  a.lastCallMin = a.d < 0.4 ? Math.round(55 + rnd()*110) : a.d < 0.7 ? Math.round(18 + rnd()*40) : Math.round(1 + rnd()*14);
+}
+
+// ---------- helpers ----------
+const $ = s => document.querySelector(s);
+const fmt = n => n.toLocaleString('en-US');
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs={}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const BUCKETS = [
+  {label:'Today',     test:o=>o.last!==null && o.last<1},
+  {label:'1-2 days',  test:o=>o.last!==null && o.last>=1 && o.last<3},
+  {label:'3-6 days',  test:o=>o.last!==null && o.last>=3 && o.last<7},
+  {label:'7-13 days', test:o=>o.last!==null && o.last>=7 && o.last<14},
+  {label:'14+ days',  test:o=>o.last!==null && o.last>=14},
+  {label:'Never',     test:o=>o.last===null},
+];
+const RAMP = ['#cde2fb','#b7d3f6','#9ec5f4','#86b6ef','#6da7ec','#5598e7','#3987e5','#2a78d6','#256abf','#1c5cab','#184f95','#104281','#0d366b'];
+const isStale = o => o.last===null ? o.created >= 1 : o.last >= 7;
+
+// tooltip
+const tip = $('#tip');
+function showTip(ev, title, rows){
+  tip.innerHTML = `<div class="t">${title}</div>` + rows.map(([k,v])=>`<div class="r"><span>${k}</span><b>${v}</b></div>`).join('');
+  tip.style.opacity = 1; moveTip(ev);
+}
+function moveTip(ev){
+  const r = tip.getBoundingClientRect(); let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - 14;
+  tip.style.left = x+'px'; tip.style.top = y+'px';
+}
+const hideTip = () => tip.style.opacity = 0;
+function bindTip(node, title, rows){
+  node.addEventListener('pointerenter', e=>showTip(e,title,rows));
+  node.addEventListener('pointermove', moveTip);
+  node.addEventListener('pointerleave', hideTip);
+  node.addEventListener('focus', ()=>{ const b=node.getBoundingClientRect(); showTip({clientX:b.right,clientY:b.top},title,rows); });
+  node.addEventListener('blur', hideTip);
+}
+
+// ---------- state ----------
+// the pipeline filter lives in the URL so a filtered view can be linked
+let pipeFilter = new URLSearchParams(location.search).get('pipeline') || 'all';
+if (pipeFilter!=='all' && !PIPES.some(p=>p.id===pipeFilter)) pipeFilter = 'all';
+let sortKey = 'attention', sortDir = -1;
+
+function stats(){
+  const list = opps.filter(o => pipeFilter==='all' || o.pipe===pipeFilter);
+  const per = agents.map(a => {
+    const mine = list.filter(o=>o.agent===a.id);
+    const never = mine.filter(o=>o.last===null);
+    const oldestNever = never.reduce((m,o)=>Math.max(m,o.created),0);
+    const stale = mine.filter(isStale).length;
+    const today = a.calls[a.calls.length-1];
+    return {a, open:mine.length, never:never.length, oldestNever, stale, today, lastCall:a.lastCallMin, buckets:BUCKETS.map(b=>mine.filter(b.test).length)};
+  });
+  const floorToday = agents.reduce((s,a)=>s+a.calls[a.calls.length-1],0);
+  const floorYestPace = Math.round(agents.reduce((s,a)=>s+a.calls[a.calls.length-2],0)*DAY_FRAC);
+  const med = [...per].map(p=>p.today).sort((x,y)=>x-y)[Math.floor(per.length/2)];
+  for (const p of per){
+    p.behind = p.today < med*0.5;
+    p.status = (p.never>=8 || p.lastCall>60 || p.behind) ? 'crit' : (p.stale > 12 || p.lastCall>30) ? 'warn' : 'good';
+    p.attention = p.never*2 + p.stale + p.oldestNever*2 + p.lastCall/6 - p.today*0.3;
+  }
+  return {list, per, floorToday, floorYestPace, med};
+}
+
+// ---------- render ----------
+function renderPipes(){
+  const box = $('#pipes'); box.innerHTML='';
+  [{id:'all',name:'All pipelines'},...PIPES].forEach(p=>{
+    const b = document.createElement('button'); b.textContent=p.name; b.setAttribute('aria-pressed', String(pipeFilter===p.id));
+    b.onclick = ()=>{
+      pipeFilter=p.id;
+      const u = new URL(location.href); if (p.id==='all') u.searchParams.delete('pipeline'); else u.searchParams.set('pipeline', p.id);
+      history.replaceState(null,'',u); render();
+    }; box.appendChild(b);
+  });
+}
+
+const STATUS = {
+  crit:{label:'Needs attention', color:'var(--crit)', icon:'<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6.5" fill="var(--crit)"/><path d="M7 3.5v4.2M7 9.6v.9" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>'},
+  warn:{label:'Watch', color:'var(--warn)', icon:'<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1 13.2 12.5H.8Z" fill="var(--warn)"/><path d="M7 5v3.6M7 10.2v.5" stroke="#0b0b0b" stroke-width="1.6" stroke-linecap="round"/></svg>'},
+  good:{label:'On track', color:'var(--good)', icon:'<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6.5" fill="var(--good)"/><path d="m4 7.2 2 2 4-4.2" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
+};
+
+function renderTiles(s){
+  const open = s.list.length, never = s.per.reduce((t,p)=>t+p.never,0);
+  const never24 = s.list.filter(o=>o.last===null && o.created>=1).length;
+  const stale = s.list.filter(o=>o.last!==null && o.last>=7).length + never24;
+  const behind = s.per.filter(p=>p.behind).length;
+  const d = s.floorYestPace ? Math.round((s.floorToday - s.floorYestPace)/s.floorYestPace*100) : 0;
+  const tiles = [
+    {cls:'hero', label:'Leads with no contact in 7+ days', value:fmt(stale), sub:`${Math.round(stale/open*100)}% of ${fmt(open)} open leads`},
+    {label:'Never contacted', value:fmt(never), sub:`${fmt(never24)} waiting over 24 hours`},
+    {label:'Open leads', value:fmt(open), sub: pipeFilter==='all' ? 'across 3 pipelines' : PIPES.find(p=>p.id===pipeFilter).name},
+    {label:'Calls so far today', value:fmt(s.floorToday), sub:`<span class="${d>=0?'delta-up':'delta-down'}">${d>=0?'+':''}${d}%</span> vs yesterday at this hour`},
+    {label:'Agents behind call pace', value:String(behind), sub:`under half the floor median of ${s.med} calls`},
+  ];
+  $('#tiles').innerHTML = tiles.map(t=>`<div class="tile ${t.cls||''}"><div class="label">${t.label}</div><div class="value">${t.value}</div><div class="sub">${t.sub}</div></div>`).join('');
+}
+
+const COLS = [
+  {key:'name', label:'Agent', get:p=>p.a.name},
+  {key:'open', label:'Open leads', get:p=>p.open},
+  {key:'never', label:'Never contacted', get:p=>p.never},
+  {key:'oldestNever', label:'Oldest untouched', get:p=>p.oldestNever},
+  {key:'stale', label:'No contact 7+ days', get:p=>p.stale},
+  {key:'today', label:'Calls today', get:p=>p.today},
+  {key:'lastCall', label:'Last call', get:p=>p.lastCall},
+  {key:'attention', label:'Status', get:p=>p.attention},
+];
+function renderTable(s){
+  const rows = [...s.per].sort((x,y)=>{ const c = COLS.find(c=>c.key===sortKey); const a=c.get(x), b=c.get(y); return (a>b?1:a<b?-1:0)*sortDir; });
+  const maxToday = Math.max(...s.per.map(p=>p.today),1);
+  const head = '<thead><tr>' + COLS.map(c=>`<th scope="col"><button data-k="${c.key}" ${c.key===sortKey?`data-dir="${sortDir>0?'↑':'↓'}"`:''}>${c.label}</button></th>`).join('') + '</tr></thead>';
+  const body = '<tbody>' + rows.map(p=>{
+    const st = STATUS[p.status];
+    const oldest = p.never ? (p.oldestNever*24<1 ? 'under 1 hr' : p.oldestNever<1 ? `${Math.round(p.oldestNever*24)} hrs` : `${Math.floor(p.oldestNever)} days`) : '<span style="color:var(--muted)">none</span>';
+    const last = p.lastCall>=60 ? `${Math.floor(p.lastCall/60)} hr ${p.lastCall%60} min ago` : `${p.lastCall} min ago`;
+    return `<tr>
+      <td>${p.a.name}</td><td>${p.open}</td>
+      <td class="${p.never>=8?'late':''}">${p.never}</td>
+      <td class="${p.oldestNever>=3?'late':''}">${oldest}</td>
+      <td>${p.stale}</td>
+      <td><span class="callbar">${p.today}<span class="track"><span class="fill" style="width:${p.today/maxToday*100}%"></span></span></span></td>
+      <td class="${p.lastCall>60?'late':''}">${last}</td>
+      <td><span class="status">${st.icon}${st.label}</span></td></tr>`;
+  }).join('') + '</tbody>';
+  const t = $('#agents'); t.innerHTML = head + body;
+  t.querySelectorAll('th button').forEach(b=>b.onclick=()=>{ const k=b.dataset.k; if (k===sortKey) sortDir*=-1; else { sortKey=k; sortDir = k==='name'?1:-1; } render(); });
+}
+
+function renderHeat(s){
+  const rows = [...s.per].sort((x,y)=> (y.buckets[3]+y.buckets[4]+y.buckets[5]) - (x.buckets[3]+x.buckets[4]+x.buckets[5]));
+  const max = Math.max(...rows.flatMap(p=>p.buckets),1);
+  const box = $('#heat'); box.innerHTML='';
+  box.className='heat'; box.style.gridTemplateColumns = `minmax(90px,1.3fr) repeat(${BUCKETS.length},minmax(34px,1fr))`;
+  box.setAttribute('role','group'); box.setAttribute('aria-label','Open leads per agent by days since last contact');
+  const hdr = document.createElement('div'); box.appendChild(hdr);
+  BUCKETS.forEach(b=>{ const h=document.createElement('div'); h.className='hd'; h.textContent=b.label; box.appendChild(h); });
+  for (const p of rows){
+    const n=document.createElement('div'); n.className='rowname'; n.textContent=p.a.name; box.appendChild(n);
+    p.buckets.forEach((v,i)=>{
+      const c=document.createElement('div'); c.className='cell'; c.tabIndex=0; c.setAttribute('role','img');
+      c.setAttribute('aria-label', `${p.a.name}, ${BUCKETS[i].label==='Never'?'never contacted':'last contact '+BUCKETS[i].label}: ${v} leads`);
+      if (v===0){ c.style.background='var(--empty)'; }
+      else {
+        // healthy columns recede in blue; stale columns carry the orange, same encoding as the pile-up chart
+        const staleCol = i >= 3, t = Math.sqrt(v/max);
+        const pct = staleCol ? Math.round(18 + t*82) : Math.round(8 + t*32);
+        c.style.background = `color-mix(in oklab, var(${staleCol?'--s2':'--s1'}) ${pct}%, var(--surface))`;
+        c.style.color = pct >= 60 ? '#ffffff' : 'var(--ink)';
+        c.textContent = v;
+      }
+      bindTip(c, p.a.name, [['Last contact', BUCKETS[i].label==='Never'?'never contacted':BUCKETS[i].label], ['Open leads', v]]);
+      box.appendChild(c);
+    });
+  }
+  $('#scalebar').innerHTML = [8,24,40].map(p=>`<i style="background:color-mix(in oklab, var(--s1) ${p}%, var(--surface))"></i>`).join('')
+    + '<span style="width:8px"></span>' + [18,45,72,100].map(p=>`<i style="background:color-mix(in oklab, var(--s2) ${p}%, var(--surface))"></i>`).join('');
+}
+
+function renderPile(s){
+  const box = $('#pile'); box.innerHTML='';
+  const pipes = pipeFilter==='all' ? PIPES : PIPES.filter(p=>p.id===pipeFilter);
+  const W = Math.max(280, box.clientWidth), LBL = 118, END = 86, BAR = 18, GAP = 10;
+  const allCounts = pipes.flatMap(p=>p.stages.map((_,i)=>s.list.filter(o=>o.pipe===p.id && o.stage===i).length));
+  const max = Math.max(...allCounts,1);
+  for (const p of pipes){
+    const h = p.stages.length*(BAR+GAP) + 24;
+    const svg = el('svg',{width:W,height:h,role:'img','aria-label':`${p.name}: open leads per stage`},box);
+    el('text',{x:0,y:13,class:'lbl-strong'},svg).textContent = p.name;
+    const x0 = LBL, span = W - LBL - END;
+    el('line',{x1:x0,x2:x0,y1:20,y2:h,stroke:css('--axis'),'stroke-width':1},svg);
+    p.stages.forEach((st,i)=>{
+      const mine = s.list.filter(o=>o.pipe===p.id && o.stage===i);
+      const stale = mine.filter(isStale).length, fresh = mine.length - stale;
+      const y = 24 + i*(BAR+GAP);
+      el('text',{x:LBL-8,y:y+BAR/2+4,'text-anchor':'end',class:'lbl'},svg).textContent = st;
+      const wf = fresh/max*span, ws = stale/max*span;
+      const g = el('g',{tabindex:0,role:'img','aria-label':`${st}: ${mine.length} open, ${stale} with no contact in 7+ days`},svg);
+      // hit target covers the full row
+      el('rect',{x:x0,y:y-GAP/2,width:span+END,height:BAR+GAP,fill:'transparent'},g);
+      if (wf>0) el('rect',{x:x0,y,width:Math.max(0,wf - (ws>0?1:0)),height:BAR,fill:'var(--s1)'},g);
+      if (ws>0){
+        const sx = x0 + wf + (wf>0?1:0), w = Math.max(2, ws - (wf>0?1:0));
+        el('path',{d:`M${sx},${y}h${w-4}a4,4 0 0 1 4,4v${BAR-8}a4,4 0 0 1 -4,4h${-(w-4)}z`,fill:'var(--s2)'},g);
+      } else if (wf>4){
+        g.lastChild.remove();
+        el('path',{d:`M${x0},${y}h${wf-4}a4,4 0 0 1 4,4v${BAR-8}a4,4 0 0 1 -4,4h${-(wf-4)}z`,fill:'var(--s1)'},g);
+      }
+      const t = el('text',{x:x0+wf+ws+6,y:y+BAR/2+4,class:'lbl'},g);
+      t.textContent = stale ? `${mine.length} · ${stale} stale` : `${mine.length}`;
+      bindTip(g, `${p.name} · ${st}`, [['Open leads', mine.length], ['Contacted in last 7 days', fresh], ['No contact 7+ days', stale]]);
+    });
+  }
+}
+
+function renderCalls(){
+  const box = $('#calls'); box.innerHTML='';
+  const W = Math.max(300, box.clientWidth), H = 220, L = 44, R = 70, T = 12, B = 28;
+  const vals = workdays.map((_,i)=>agents.reduce((s,a)=>s+a.calls[i],0));
+  const max = Math.ceil(Math.max(...vals)/500)*500;
+  const x = i => L + i*(W-L-R)/(vals.length-1), y = v => T + (1 - v/max)*(H-T-B);
+  const svg = el('svg',{width:W,height:H,role:'img','aria-label':'Floor calls per workday, last 10 workdays'},box);
+  for (let v=0; v<=max; v+=500){
+    el('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke: v===0?css('--axis'):css('--grid'),'stroke-width':1},svg);
+    el('text',{x:L-8,y:y(v)+4,'text-anchor':'end',class:'num'},svg).textContent = fmt(v);
+  }
+  workdays.forEach((d,i)=>{
+    const lab = i===vals.length-1 ? 'Today' : d.toLocaleDateString('en-US',{weekday:'short',day:'numeric'});
+    el('text',{x:x(i),y:H-8,'text-anchor':'middle'},svg).textContent = lab;
+  });
+  const done = vals.slice(0,-1);
+  el('path',{d:'M'+done.map((v,i)=>`${x(i)},${y(v)}`).join('L')+`L${x(done.length-1)},${y(0)}L${x(0)},${y(0)}Z`,fill:'var(--s1-wash)'},svg);
+  el('path',{d:'M'+done.map((v,i)=>`${x(i)},${y(v)}`).join('L'),fill:'none',stroke:'var(--s1)','stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'},svg);
+  const li = vals.length-1;
+  // today is a partial day: its own hollow marker, never joined to the full-day line
+  el('circle',{cx:x(li),cy:y(vals[li]),r:5,fill:'var(--surface)',stroke:'var(--s1)','stroke-width':2},svg);
+  el('text',{x:x(li),y:y(vals[li])-12,'text-anchor':'middle',class:'lbl'},svg).textContent = `${fmt(vals[li])} so far`;
+  el('text',{x:x(li-1)+8,y:y(vals[li-1])-10,class:'lbl'},svg).textContent = fmt(vals[li-1]);
+  el('circle',{cx:x(li-1),cy:y(vals[li-1]),r:4,fill:'var(--s1)',stroke:'var(--surface)','stroke-width':2},svg);
+  // crosshair
+  const cross = el('line',{y1:T,y2:H-B,stroke:css('--axis'),'stroke-width':1,opacity:0},svg);
+  const dot = el('circle',{r:5,fill:'var(--s1)',stroke:'var(--surface)','stroke-width':2,opacity:0},svg);
+  const hit = el('rect',{x:L,y:T,width:W-L-R,height:H-T-B,fill:'transparent'},svg);
+  hit.addEventListener('pointermove', e=>{
+    const b = svg.getBoundingClientRect(); const i = Math.max(0,Math.min(vals.length-1, Math.round((e.clientX-b.left-L)/((W-L-R)/(vals.length-1)))));
+    cross.setAttribute('x1',x(i)); cross.setAttribute('x2',x(i)); cross.setAttribute('opacity',1);
+    dot.setAttribute('cx',x(i)); dot.setAttribute('cy',y(vals[i])); dot.setAttribute('opacity',1);
+    const top = [...agents].sort((a,b)=>b.calls[i]-a.calls[i])[0];
+    showTip(e, i===li ? 'Today (so far)' : workdays[i].toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'}),
+      [['Floor calls', fmt(vals[i])], ['Top agent', `${top.name.split(' ')[0]} · ${top.calls[i]}`]]);
+  });
+  hit.addEventListener('pointerleave', ()=>{ cross.setAttribute('opacity',0); dot.setAttribute('opacity',0); hideTip(); });
+}
+
+function render(){
+  renderPipes();
+  const s = stats();
+  renderTiles(s); renderTable(s); renderHeat(s); renderPile(s); renderCalls();
+}
+
+// controls
+$('#clock').textContent = NOW.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}) + ', ' + NOW.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+const themeBtn = $('#themeBtn');
+const isDark = () => document.documentElement.dataset.theme ? document.documentElement.dataset.theme==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+const syncThemeBtn = () => themeBtn.textContent = isDark() ? 'Light' : 'Dark';
+themeBtn.onclick = () => { document.documentElement.dataset.theme = isDark() ? 'light' : 'dark'; syncThemeBtn(); render(); };
+$('#tvBtn').onclick = e => { const on = document.documentElement.classList.toggle('tv'); e.currentTarget.setAttribute('aria-pressed', String(on)); render(); };
+syncThemeBtn();
+let rt; addEventListener('resize', ()=>{ clearTimeout(rt); rt = setTimeout(render, 120); });
+render();
+})();
+</script>
+</body>
+</html>
